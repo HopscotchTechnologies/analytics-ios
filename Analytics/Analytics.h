@@ -30,7 +30,7 @@
     [Analytics debug:YES];
  
     // Initialize the Analytics instance
-    [Analytics initializeWithSecret:@"YOUR SEGMENT.IO WRITE KEY FROM HTTPS://SEGMENT.IO/LIBRARIES/IOS"];
+    [Analytics initializeWithSettings:settings];
  
     // YOUR OTHER APP LAUNCH CODE HERE....
 
