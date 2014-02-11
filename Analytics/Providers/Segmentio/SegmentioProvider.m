@@ -61,7 +61,7 @@ static NSString *GetSessionID(BOOL reset) {
 }
 
 - (id)initWithAnalytics:(Analytics *)analytics {
-    if (self = [self initWithFlushAt:20 flushAfter:3]) {
+    if (self = [self initWithFlushAt:20 flushAfter:30]) {
         self.analytics = analytics;
     }
     return self;
@@ -367,7 +367,7 @@ static NSString *GetSessionID(BOOL reset) {
 - (void)notifyForName:(NSString *)name userInfo:(id)userInfo {
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:name object:self];
-        NSLog(@"sent notification %@", name);
+//        NSLog(@"sent notification %@", name);
     });
 }
 
