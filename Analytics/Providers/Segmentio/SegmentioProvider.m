@@ -11,7 +11,6 @@
 #import "AnalyticsRequest.h"
 #import "SegmentioProvider.h"
 
-#define SEGMENTIO_API_URL [NSURL URLWithString:@"http://localhost:3000/api/v1/events/upload"]
 #define SEGMENTIO_MAX_BATCH_SIZE 100
 #define DISK_SESSION_ID_URL AnalyticsURLForFilename(@"segmentio.sessionID")
 #define DISK_USER_ID_URL AnalyticsURLForFilename(@"segmentio.userID")
@@ -126,12 +125,10 @@ static NSString *GetSessionID(BOOL reset) {
         [deviceInfo setValue:carrier.carrierName forKey:@"carrier"];
     }
     
-    // ID for Advertiser (IFA)
-    if (NSClassFromString(@"ASIdentifierManager")) {
-        [deviceInfo setValue:[self getIdForAdvertiser] forKey:@"idForAdvertiser"];
-    }
+	[deviceInfo setValue:[self getIdForVendor] forKey:@"idForVendor"];
+
     
-    // Screen size
+	// Screen size
     CGSize screenSize = [UIScreen mainScreen].bounds.size;
     [deviceInfo setValue:[NSNumber numberWithInt:(int)screenSize.width] forKey:@"screenWidth"];
     [deviceInfo setValue:[NSNumber numberWithInt:(int)screenSize.height] forKey:@"screenHeight"];
@@ -142,15 +139,27 @@ static NSString *GetSessionID(BOOL reset) {
 - (NSString *)getIdForAdvertiser
 {
     NSString* idForAdvertiser = nil;
-    Class ASIdentifierManagerClass = NSClassFromString(@"ASIdentifierManager");
-    if (ASIdentifierManagerClass) {
-        SEL sharedManagerSelector = NSSelectorFromString(@"sharedManager");
-        id sharedManager = ((id (*)(id, SEL))[ASIdentifierManagerClass methodForSelector:sharedManagerSelector])(ASIdentifierManagerClass, sharedManagerSelector);
-        SEL advertisingIdentifierSelector = NSSelectorFromString(@"advertisingIdentifier");
-        NSUUID *uuid = ((NSUUID* (*)(id, SEL))[sharedManager methodForSelector:advertisingIdentifierSelector])(sharedManager, advertisingIdentifierSelector);
-        idForAdvertiser = [uuid UUIDString];
-    }
-    return idForAdvertiser;
+//
+// The following code smells too much like trying to sneak around Apple's requirements.
+// See https://github.com/mixpanel/mixpanel-iphone/issues/109
+//
+//    Class ASIdentifierManagerClass = NSClassFromString(@"ASIdentifierManager");
+//    if (ASIdentifierManagerClass) {
+//        SEL sharedManagerSelector = NSSelectorFromString(@"sharedManager");
+//        id sharedManager = ((id (*)(id, SEL))[ASIdentifierManagerClass methodForSelector:sharedManagerSelector])(ASIdentifierManagerClass, sharedManagerSelector);
+//        SEL advertisingIdentifierSelector = NSSelectorFromString(@"advertisingIdentifier");
+//        NSUUID *uuid = ((NSUUID* (*)(id, SEL))[sharedManager methodForSelector:advertisingIdentifierSelector])(sharedManager, advertisingIdentifierSelector);
+//        idForAdvertiser = [uuid UUIDString];
+//    }
+
+	return idForAdvertiser;
+}
+
+- (NSString *)getIdForVendor
+{
+	NSUUID *oNSUUID = [[UIDevice currentDevice] identifierForVendor];
+	NSString *deviceId = [oNSUUID UUIDString];
+	return deviceId;
 }
 
 - (NSString *)deviceModel
@@ -189,6 +198,7 @@ static NSString *GetSessionID(BOOL reset) {
 
 - (void)updateSettings:(NSDictionary *)settings {
     self.api_token = [settings valueForKey:@"api_token"];
+	self.api_url = [NSURL URLWithString:[settings valueForKey:@"api_url"]];
 }
 
 - (void)validate {
@@ -362,7 +372,7 @@ static NSString *GetSessionID(BOOL reset) {
 }
 
 - (void)sendData:(NSData *)data {
-    NSMutableURLRequest *urlRequest = [NSMutableURLRequest requestWithURL:SEGMENTIO_API_URL];
+    NSMutableURLRequest *urlRequest = [NSMutableURLRequest requestWithURL:self.api_url];
     [urlRequest setValue:@"gzip" forHTTPHeaderField:@"Accept-Encoding"];
     [urlRequest setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
     [urlRequest setHTTPMethod:@"POST"];
