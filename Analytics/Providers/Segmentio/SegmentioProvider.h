@@ -10,10 +10,10 @@ extern NSString *const SegmentioRequestDidFailNotification;
 
 @interface SegmentioProvider : AnalyticsProvider <AnalyticsProvider>
 
-@property(nonatomic, strong) NSString *api_token;
+@property(nonatomic, strong) NSString *apiToken;
 @property(nonatomic, strong) NSString *userId;
 @property(nonatomic, strong) NSString *sessionId;
-@property(nonatomic, strong) NSURL *api_url;
+@property(nonatomic, strong) NSURL *apiUrl;
 @property(nonatomic, assign) NSUInteger flushAt;
 @property(nonatomic, assign) NSUInteger flushAfter;
 

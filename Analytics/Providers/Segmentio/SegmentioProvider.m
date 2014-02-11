@@ -197,8 +197,8 @@ static NSString *GetSessionID(BOOL reset) {
 }
 
 - (void)updateSettings:(NSDictionary *)settings {
-    self.api_token = [settings valueForKey:@"api_token"];
-	self.api_url = [NSURL URLWithString:[settings valueForKey:@"api_url"]];
+    self.apiToken = [settings valueForKey:@"api_token"];
+	self.apiUrl = [NSURL URLWithString:[settings valueForKey:@"api_url"]];
 }
 
 - (void)validate {
@@ -325,7 +325,7 @@ static NSString *GetSessionID(BOOL reset) {
         SOLog(@"%@ Flushing %lu of %lu queued API calls.", self, (unsigned long)self.batch.count, (unsigned long)self.queue.count);
         
         NSMutableDictionary *payloadDictionary = [NSMutableDictionary dictionary];
-        [payloadDictionary setObject:self.api_token forKey:@"api_token"];
+        [payloadDictionary setObject:self.apiToken forKey:@"api_token"];
         [payloadDictionary setObject:[[NSDate date] description] forKey:@"requestTimestamp"];
         [payloadDictionary setObject:self.batch forKey:@"batch"];
         
@@ -372,7 +372,7 @@ static NSString *GetSessionID(BOOL reset) {
 }
 
 - (void)sendData:(NSData *)data {
-    NSMutableURLRequest *urlRequest = [NSMutableURLRequest requestWithURL:self.api_url];
+    NSMutableURLRequest *urlRequest = [NSMutableURLRequest requestWithURL:self.apiUrl];
     [urlRequest setValue:@"gzip" forHTTPHeaderField:@"Accept-Encoding"];
     [urlRequest setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
     [urlRequest setHTTPMethod:@"POST"];
