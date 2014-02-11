@@ -6,7 +6,6 @@
 
 @interface Analytics : NSObject
 
-@property(nonatomic, strong) NSString *secret;
 @property(nonatomic, readonly) NSDictionary *providers;
 
 
@@ -19,7 +18,7 @@
  @abstract
  Creates the shared Analytics instance and initializes it with your Segment.io write key.
 
- @param secret        Your Segment.io write key from the setup guide at https://segment.io
+ @param settings NSDictionary of Provider Settings
 
  @discussion
  While developing, we recommend you turn on debug logging before you initialize the Analytics instance with your write key:
@@ -38,7 +37,7 @@
 }
 
 */
-+ (void)initializeWithNothing;
++ (void)initializeWithSettings:(NSDictionary *)settings;
 
 /*!
  @method
@@ -59,7 +58,7 @@
     [Analytics debug:YES];
  
     // Initialize the Analytics instance
-    [Analytics initializeWithSecret:@"YOUR SEGMENT.IO WRITE KEY FROM HTTPS://SEGMENT.IO/LIBRARIES/IOS"];
+    [Analytics initializeAnalytics];
  
     // YOUR OTHER APP LAUNCH CODE HERE....
  
@@ -191,7 +190,7 @@
  @abstract
  Used internally to create an Analytics instance.
 */
-- (id)initWithNothing;
+- (id)initWithSettings:(NSDictionary *)settings;
 + (NSString *)version;
 
 // Must be called before initializing Analytics in order to successfully register provider

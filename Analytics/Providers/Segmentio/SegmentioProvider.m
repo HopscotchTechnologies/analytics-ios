@@ -11,7 +11,7 @@
 #import "AnalyticsRequest.h"
 #import "SegmentioProvider.h"
 
-#define SEGMENTIO_API_URL [NSURL URLWithString:@"https://api.segment.io/v1/import"]
+#define SEGMENTIO_API_URL [NSURL URLWithString:@"http://localhost:3000/api/v1/events/upload"]
 #define SEGMENTIO_MAX_BATCH_SIZE 100
 #define DISK_SESSION_ID_URL AnalyticsURLForFilename(@"segmentio.sessionID")
 #define DISK_USER_ID_URL AnalyticsURLForFilename(@"segmentio.userID")
@@ -62,21 +62,19 @@ static NSString *GetSessionID(BOOL reset) {
 }
 
 - (id)initWithAnalytics:(Analytics *)analytics {
-    if (self = [self initWithSecret:analytics.secret flushAt:20 flushAfter:30]) {
+    if (self = [self initWithFlushAt:20 flushAfter:3]) {
         self.analytics = analytics;
     }
     return self;
 }
 
-- (id)initWithSecret:(NSString *)secret flushAt:(NSUInteger)flushAt flushAfter:(NSUInteger)flushAfter {
-    NSParameterAssert(secret.length);
+- (id)initWithFlushAt:(NSUInteger)flushAt flushAfter:(NSUInteger)flushAfter {
     NSParameterAssert(flushAt > 0);
     NSParameterAssert(flushAfter > 0);
     
     if (self = [self init]) {
         _flushAt = flushAt;
         _flushAfter = flushAfter;
-        _secret = secret;
         _sessionId = GetSessionID(NO);
         _userId = [NSString stringWithContentsOfURL:DISK_USER_ID_URL encoding:NSUTF8StringEncoding error:NULL];
         _queue = [NSMutableArray arrayWithContentsOfURL:DISK_QUEUE_URL];
@@ -97,7 +95,7 @@ static NSString *GetSessionID(BOOL reset) {
         self.name = @"Segment.io";
         self.valid = NO;
         self.initialized = NO;
-        self.settings = [NSDictionary dictionaryWithObjectsAndKeys:secret, @"secret", nil];
+        self.settings = [NSDictionary dictionary];
         [self validate];
         self.initialized = YES;
 
@@ -190,12 +188,11 @@ static NSString *GetSessionID(BOOL reset) {
 }
 
 - (void)updateSettings:(NSDictionary *)settings {
-    
+    self.api_token = [settings valueForKey:@"api_token"];
 }
 
 - (void)validate {
-    BOOL hasSecret = [self.settings objectForKey:@"secret"] != nil;
-    self.valid = hasSecret;
+    self.valid = YES;
 }
 
 - (NSString *)getSessionId {
@@ -203,7 +200,7 @@ static NSString *GetSessionID(BOOL reset) {
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"<SegmentioProvider secret:%@>", self.secret];
+    return [NSString stringWithFormat:@"<SegmentioProvider>"];
 }
 
 - (void)saveUserId:(NSString *)userId {
@@ -318,7 +315,7 @@ static NSString *GetSessionID(BOOL reset) {
         SOLog(@"%@ Flushing %lu of %lu queued API calls.", self, (unsigned long)self.batch.count, (unsigned long)self.queue.count);
         
         NSMutableDictionary *payloadDictionary = [NSMutableDictionary dictionary];
-        [payloadDictionary setObject:self.secret forKey:@"secret"];
+        [payloadDictionary setObject:self.api_token forKey:@"api_token"];
         [payloadDictionary setObject:[[NSDate date] description] forKey:@"requestTimestamp"];
         [payloadDictionary setObject:self.batch forKey:@"batch"];
         
