@@ -285,19 +285,10 @@ static NSString *GetSessionID(BOOL reset) {
     // attach these parts of the payload outside since they are all synchronous
     // and the timestamp will be more accurate.
     NSMutableDictionary *payload = [NSMutableDictionary dictionaryWithDictionary:dictionary];
-    payload[@"action"] = action;
     payload[@"timestamp"] = [[NSDate date] description];
-    payload[@"requestId"] = GenerateUUIDString();
 
     [self dispatchBackground:^{
-        // attach userId and sessionId inside the dispatch_async in case
-        // they've changed (see identify function)
-        [payload setValue:self.userId forKey:@"userId"];
-        [payload setValue:self.sessionId forKey:@"sessionId"];
         SOLog(@"%@ Enqueueing action: %@", self, payload);
-        
-        // TODO change context to options when server-side is ready
-        [payload setValue:[self serverOptionsForOptions:options] forKey:@"context"];
         [self.queue addObject:payload];
         [self flushQueueByLength];
     }];
@@ -328,6 +319,12 @@ static NSString *GetSessionID(BOOL reset) {
         [payloadDictionary setObject:self.apiToken forKey:@"api_token"];
         [payloadDictionary setObject:[[NSDate date] description] forKey:@"requestTimestamp"];
         [payloadDictionary setObject:self.batch forKey:@"batch"];
+        // attach userId and sessionId inside the dispatch_async in case
+        // they've changed (see identify function)
+        [payloadDictionary setValue:self.userId forKey:@"userId"];
+        [payloadDictionary setValue:self.sessionId forKey:@"sessionId"];
+        [payloadDictionary setValue:[self serverOptionsForOptions:nil] forKey:@"context"];
+
         
         NSData *payload = [NSJSONSerialization dataWithJSONObject:payloadDictionary
                                                           options:0 error:NULL];
