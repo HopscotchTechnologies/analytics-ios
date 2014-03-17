@@ -8,7 +8,7 @@
 #import "Analytics.h"
 
 #define SETTING_CACHE_URL AnalyticsURLForFilename(@"analytics.settings.plist")
-static NSInteger const AnalyticsSettingsUpdateInterval = 3600;
+//static NSInteger const AnalyticsSettingsUpdateInterval = 3600;
 
 @interface Analytics ()
 
