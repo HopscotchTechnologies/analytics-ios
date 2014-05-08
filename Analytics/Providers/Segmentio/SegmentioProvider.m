@@ -50,6 +50,7 @@ static NSString *GetSessionID(BOOL reset) {
 @property (nonatomic, strong) NSArray *batch;
 @property (nonatomic, strong) AnalyticsRequest *request;
 @property (nonatomic, assign) UIBackgroundTaskIdentifier flushTaskID;
+@property (nonatomic, strong) NSDateFormatter *dateFormatter;
 
 @end
 
@@ -90,6 +91,13 @@ static NSString *GetSessionID(BOOL reset) {
                                                       repeats:YES];
         _serialQueue = dispatch_queue_create_specific("io.segment.analytics.segmentio", DISPATCH_QUEUE_SERIAL);
         _flushTaskID = UIBackgroundTaskInvalid;
+		
+		// http://www.flexicoder.com/blog/index.php/2013/10/ios-24-hour-date-format/
+		_dateFormatter = [[NSDateFormatter alloc] init];
+		NSLocale *enUSPOSIXLocale = [[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"];
+		[_dateFormatter setLocale:enUSPOSIXLocale];
+		[_dateFormatter setDateFormat:@"yyyy-MM-dd'T'HH:mm:ss"];
+		[_dateFormatter setTimeZone:[NSTimeZone timeZoneForSecondsFromGMT:0]];
         
         self.name = @"Segment.io";
         self.valid = NO;
@@ -285,7 +293,7 @@ static NSString *GetSessionID(BOOL reset) {
     // attach these parts of the payload outside since they are all synchronous
     // and the timestamp will be more accurate.
     NSMutableDictionary *payload = [NSMutableDictionary dictionaryWithDictionary:dictionary];
-    payload[@"timestamp"] = [[NSDate date] description];
+    payload[@"timestamp"] = [self.dateFormatter stringFromDate:[NSDate date]];
 
     [self dispatchBackground:^{
         SOLog(@"%@ Enqueueing action: %@", self, payload);
