@@ -1,7 +1,7 @@
 link_with 'Analytics'
 
 pod 'Amplitude-iOS', '~> 1.0.2'
-pod 'Bugsnag', '3.1.0.fork'
+pod 'Bugsnag', '3.1.0'
 pod 'Countly', '~> 1.0.0'
 pod 'CrittercismSDK', '~> 4.3.1'
 pod 'FlurrySDK', '~> 4.3.0'
